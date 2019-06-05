@@ -18,7 +18,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
 
-public class SimpleTextAdapter<T> extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+public class BasicRecyclerAdapter<T> extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private Activity activity;
     private final List<T> items;
@@ -27,7 +27,7 @@ public class SimpleTextAdapter<T> extends RecyclerView.Adapter<RecyclerView.View
     private final EasyListView.OnItemClickListener onClickListener;
     private EasyListView.OnBindViewHolderCalledListener<T> onBindViewHolderCalledListener;
 
-    public SimpleTextAdapter(Activity activity, List<T> items, int size, ListTile listTile, EasyListView.OnItemClickListener onClickListener, EasyListView.OnBindViewHolderCalledListener<T> onBindViewHolderCalledListener) {
+    public BasicRecyclerAdapter(Activity activity, List<T> items, int size, ListTile listTile, EasyListView.OnItemClickListener onClickListener, EasyListView.OnBindViewHolderCalledListener<T> onBindViewHolderCalledListener) {
         this.activity = activity;
         this.items = items;
         this.size = size;
@@ -46,23 +46,23 @@ public class SimpleTextAdapter<T> extends RecyclerView.Adapter<RecyclerView.View
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder viewHolder, int position) {
         if (viewHolder instanceof SimpleTextViewHolder) {
-            try {
-                SimpleTextViewHolder<T> simpleTextViewHolder = (SimpleTextViewHolder<T>) viewHolder;
-                if (onBindViewHolderCalledListener == null) {
-                    simpleTextViewHolder.setData(items, listTile, position);
-                }else {
-                    final int finalPosition = position;
-                    simpleTextViewHolder.itemView.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            onClickListener.onClick(v, finalPosition );
+            SimpleTextViewHolder<T> simpleTextViewHolder = (SimpleTextViewHolder<T>) viewHolder;
+            if (onBindViewHolderCalledListener == null) {
+                simpleTextViewHolder.setData(items, listTile, position);
+            } else {
+                final int finalPosition = position;
+                simpleTextViewHolder.itemView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if (onClickListener != null) {
+                            onClickListener.onClick(v, finalPosition);
                         }
-                    });
-                    onBindViewHolderCalledListener.onBasicBindViewHolder(simpleTextViewHolder, items.get(position), position);
-                }
-            } catch (ClassCastException e) {
-                e.printStackTrace();
+                    }
+                });
+                onBindViewHolderCalledListener.onBasicBindViewHolder(simpleTextViewHolder, items.get(position), position);
             }
+        }else {
+            throw new RuntimeException("Unable to cast custom ViewHolder");
         }
     }
 
@@ -73,7 +73,7 @@ public class SimpleTextAdapter<T> extends RecyclerView.Adapter<RecyclerView.View
                 return 0;
             }
             return items.size();
-        }else return size;
+        } else return size;
     }
 
     public static class SimpleTextViewHolder<T> extends RecyclerView.ViewHolder {
@@ -97,10 +97,10 @@ public class SimpleTextAdapter<T> extends RecyclerView.Adapter<RecyclerView.View
         }
 
         void setData(List<T> items, ListTile listTile, final int position) {
-            if (listTile.getItemsPOJOClass() == null ){
+            if (listTile.getItemsPOJOClass() == null) {
                 throw new IllegalArgumentException("Item POJO class must not be null in ListTile");
             }
-            if (listTile.getDescription() == null && listTile.getIcon() == null && listTile.getTitle() == null ){
+            if (listTile.getDescription() == null && listTile.getIcon() == null && listTile.getTitle() == null) {
                 throw new IllegalArgumentException("At least one of {title, description and icon} " +
                         "must be set in ListTile to use the default behavior");
             }
